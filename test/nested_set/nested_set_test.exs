@@ -160,13 +160,7 @@ defmodule ActsAs.NestedSetTest do
 
     def move_to_child_of(%Dummy{} = dummy, parent) when is_nil(parent), do: move_to_root(dummy)
     def move_to_child_of(%Dummy{} = dummy, %Dummy{} = parent) do
-      dummy = dummy
-      |> ensure_preload(:parent)
-      # |> ensure_preload(:children)
-
-      # parent = parent
-      # |> ensure_preload(:parent)
-      # |> ensure_preload(:children)
+      dummy = ensure_preload(dummy, :parent)
 
       case Dummy.move_to_child_of(dummy, parent) do
         {:error, reason} -> {:error, reason}
@@ -176,21 +170,15 @@ defmodule ActsAs.NestedSetTest do
 
     def move_to_root(%Dummy{depth: 0}), do: {:error, "already at root level"}
     def move_to_root(%Dummy{} = dummy) do
-      dummy
-      |> move_to_right_of(last_root())
-
-      # last_root()
-      # |> move_to_right_of(dummy)
+      move_to_right_of(dummy, last_root())
     end
 
     def move_to_left_of(%Dummy{} = dummy, %Dummy{} = brother) do
       dummy = dummy
       |> ensure_preload(:parent)
-      # |> ensure_preload(:children)
 
       brother = brother
       |> ensure_preload(:parent)
-      # |> ensure_preload(:children)
 
       case Dummy.move_to_left_of(dummy, brother) do
         {:error, reason} -> {:error, reason}
@@ -201,11 +189,9 @@ defmodule ActsAs.NestedSetTest do
     def move_to_right_of(%Dummy{} = dummy, %Dummy{} = brother) do
       dummy = dummy
       |> ensure_preload(:parent)
-      # |> ensure_preload(:children)
 
       brother = brother
       |> ensure_preload(:parent)
-      # |> ensure_preload(:children)
 
       case Dummy.move_to_right_of(dummy, brother) do
         {:error, reason} -> {:error, reason}

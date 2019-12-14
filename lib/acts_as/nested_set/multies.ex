@@ -75,11 +75,6 @@ defmodule ActsAs.NestedSet.Multies do
               ]
             )
 
-            # Multi.new
-            # |> Multi.update_all(:update_depth, update_depth_query, [])
-            # |> Multi.update_all(:update_lft_rgt, update_lft_rgt_query, [])
-            # |> Multi.update(:update_parent, updated_resource)
-
             Multi.new
             |> Multi.update(:update_parent, updated_resource)
             |> Multi.update_all(:update_depth, update_depth_query, [])
@@ -128,41 +123,6 @@ defmodule ActsAs.NestedSet.Multies do
             |> Multi.update_all(:update_depth, update_depth_query, [])
             |> Multi.update_all(:update_lft_rgt, update_lft_rgt_query, [])
             |> Multi.update(:update_parent, updated_resource)
-
-            # Multi.new
-            # |> Multi.update(:update_parent, updated_resource)
-            # |> Multi.update_all(:update_depth, update_depth_query, [])
-            # |> Multi.update_all(:update_lft_rgt, update_lft_rgt_query, [])
-
-            # if resource.parent == parent do
-            #   Multi.new
-            #   |> Multi.update_all(:update_depth, update_depth_query, [])
-            #   |> Multi.update_all(:update_lft_rgt, update_lft_rgt_query, [])
-            # else
-            #   if parent do
-            #     # update parent for resource
-            #     updated_resource = resource |> change() |> put_assoc(:parent, parent)
-
-            #     Multi.new
-            #     |> Multi.update(:update_parent, updated_resource)
-            #     |> Multi.update_all(:update_depth, update_depth_query, [])
-            #     |> Multi.update_all(:update_lft_rgt, update_lft_rgt_query, [])
-            #   else
-            #     updated_resource = resource
-            #     |> IO.inspect(label: "RESOURCE")
-            #     |> change()
-            #     |> IO.inspect(label: "---->")
-            #     |> put_assoc(:parent, nil)
-            #     |> IO.inspect(label: "<----")
-
-            #     Multi.new
-            #     |> Multi.update_all(:update_depth, update_depth_query, [])
-            #     |> Multi.update_all(:update_lft_rgt, update_lft_rgt_query, [])
-            #     |> Multi.update(:update_parent, updated_resource)
-            #   end
-            # end
-
-
         end
       end
 
