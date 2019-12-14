@@ -122,6 +122,40 @@ defmodule ActsAs.NestedSetTest do
       {:ok, deleted}
     end
 
+    ### Dummy Predicates
+
+    defdelegate root?(dummy), to: Dummy
+    defdelegate child?(dummy), to: Dummy
+    defdelegate leaf?(dummy), to: Dummy
+    defdelegate is_ancestor_of?(object, subject), to: Dummy
+    defdelegate is_or_is_ancestor_of?(object, subject), to: Dummy
+    defdelegate is_descendant_of?(object, subject), to: Dummy
+    defdelegate is_or_is_descendant_of?(object, subject), to: Dummy
+
+    ### PAGE QUERIES
+
+    def root, do: Dummy.root |> TestRepo.one
+    def root(%Dummy{} = dummy), do: Dummy.root(dummy) |> TestRepo.one
+
+    def roots, do: Dummy.roots() |> TestRepo.all
+
+    def leaves, do: Dummy.leaves |> TestRepo.all
+
+    def ancestors(%Dummy{} = dummy), do: Dummy.ancestors(dummy) |> TestRepo.all
+
+    def self_and_ancestors(%Dummy{} = dummy),
+      do: Dummy.self_and_ancestors(dummy) |> TestRepo.all
+
+    def siblings(%Dummy{} = dummy), do: Dummy.siblings(dummy) |> TestRepo.all
+
+    def self_and_siblings(%Dummy{} = dummy),
+      do: Dummy.self_and_siblings(dummy) |> TestRepo.all
+
+    def descendants(%Dummy{} = dummy), do: Dummy.descendants(dummy) |> TestRepo.all
+
+    def self_and_descendants(%Dummy{} = dummy),
+      do: Dummy.self_and_descendants(dummy) |> TestRepo.all
+
     ### Dummy Movements
 
     def move_to_child_of(%Dummy{} = dummy, parent) when is_nil(parent), do: move_to_root(dummy)
@@ -561,4 +595,220 @@ defmodule ActsAs.NestedSetTest do
     # end
   end
 
+  describe "Predicates" do
+    setup do
+      {:ok, dummy_1} = DummyContext.create_dummy(%{})
+      {:ok, dummy_2} = DummyContext.create_dummy(%{})
+      {:ok, dummy_3} = DummyContext.create_dummy(%{})
+      {:ok, dummy_4} = DummyContext.create_dummy(%{}, dummy_2)
+
+      dummy_2 = DummyContext.get_dummy(dummy_2.id)
+      dummy_3 = DummyContext.get_dummy(dummy_3.id)
+
+      {:ok, dummy_1: dummy_1, dummy_2: dummy_2, dummy_3: dummy_3, dummy_4: dummy_4}
+    end
+
+    test "root?", context do
+      assert DummyContext.root?(context[:dummy_1]) == true
+      assert DummyContext.root?(context[:dummy_2]) == true
+      assert DummyContext.root?(context[:dummy_3]) == true
+      assert DummyContext.root?(context[:dummy_4]) == false
+    end
+
+    test "child?", context do
+      assert DummyContext.child?(context[:dummy_1]) == false
+      assert DummyContext.child?(context[:dummy_2]) == false
+      assert DummyContext.child?(context[:dummy_3]) == false
+      assert DummyContext.child?(context[:dummy_4]) == true
+    end
+
+    test "leaf?", context do
+      assert DummyContext.leaf?(context[:dummy_1]) == true
+      assert DummyContext.leaf?(context[:dummy_2]) == false
+      assert DummyContext.leaf?(context[:dummy_3]) == true
+      assert DummyContext.leaf?(context[:dummy_4]) == true
+    end
+
+    test "is_ancestor_of?", context do
+      dummy_1 = context[:dummy_1]
+      dummy_2 = context[:dummy_2]
+      dummy_3 = context[:dummy_3]
+      dummy_4 = context[:dummy_4]
+      assert DummyContext.is_ancestor_of?(dummy_4, dummy_4) == false
+      assert DummyContext.is_ancestor_of?(dummy_2, dummy_4) == true
+      assert DummyContext.is_ancestor_of?(dummy_4, dummy_2) == false
+      assert DummyContext.is_ancestor_of?(dummy_1, dummy_4) == false
+      assert DummyContext.is_ancestor_of?(dummy_3, dummy_4) == false
+    end
+
+    test "is_or_is_ancestor_of?", context do
+      dummy_1 = context[:dummy_1]
+      dummy_2 = context[:dummy_2]
+      dummy_3 = context[:dummy_3]
+      dummy_4 = context[:dummy_4]
+      assert DummyContext.is_or_is_ancestor_of?(dummy_4, dummy_4) == true
+      assert DummyContext.is_or_is_ancestor_of?(dummy_2, dummy_4) == true
+      assert DummyContext.is_or_is_ancestor_of?(dummy_4, dummy_2) == false
+      assert DummyContext.is_or_is_ancestor_of?(dummy_1, dummy_4) == false
+      assert DummyContext.is_or_is_ancestor_of?(dummy_3, dummy_4) == false
+    end
+
+    test "is_descendant_of?", context do
+      dummy_1 = context[:dummy_1]
+      dummy_2 = context[:dummy_2]
+      dummy_3 = context[:dummy_3]
+      dummy_4 = context[:dummy_4]
+      assert DummyContext.is_descendant_of?(dummy_4, dummy_4) == false
+      assert DummyContext.is_descendant_of?(dummy_4, dummy_2) == true
+      assert DummyContext.is_descendant_of?(dummy_2, dummy_4) == false
+      assert DummyContext.is_descendant_of?(dummy_4, dummy_1) == false
+      assert DummyContext.is_descendant_of?(dummy_4, dummy_3) == false
+    end
+
+    test "is_or_is_descendant_of?", context do
+      dummy_1 = context[:dummy_1]
+      dummy_2 = context[:dummy_2]
+      dummy_3 = context[:dummy_3]
+      dummy_4 = context[:dummy_4]
+      assert DummyContext.is_or_is_descendant_of?(dummy_4, dummy_4) == true
+      assert DummyContext.is_or_is_descendant_of?(dummy_4, dummy_2) == true
+      assert DummyContext.is_or_is_descendant_of?(dummy_2, dummy_4) == false
+      assert DummyContext.is_or_is_descendant_of?(dummy_4, dummy_1) == false
+      assert DummyContext.is_or_is_descendant_of?(dummy_4, dummy_3) == false
+    end
+  end
+
+  describe "Queries" do
+    setup do
+      {:ok, dummy_1} = DummyContext.create_dummy(%{title: "first"})
+      {:ok, dummy_2} = DummyContext.create_dummy(%{title: "second"})
+      {:ok, dummy_3} = DummyContext.create_dummy(%{title: "third"})
+      {:ok, dummy_4} = DummyContext.create_dummy(%{title: "fourth"}, dummy_2)
+      {:ok, dummy_5} = DummyContext.create_dummy(%{title: "fourth"}, dummy_4)
+
+      dummy_2 = DummyContext.get_dummy(dummy_2.id)
+      dummy_3 = DummyContext.get_dummy(dummy_3.id)
+      dummy_4 = DummyContext.get_dummy(dummy_4.id)
+
+      {:ok, dummy_1: dummy_1, dummy_2: dummy_2, dummy_3: dummy_3, dummy_4: dummy_4, dummy_5: dummy_5}
+    end
+
+    test "root", context do
+      assert DummyContext.root == context[:dummy_1]
+    end
+
+    test "root of", context do
+      assert DummyContext.root(context[:dummy_4]) == context[:dummy_2]
+      assert DummyContext.root(context[:dummy_5]) == context[:dummy_2]
+      assert DummyContext.root(context[:dummy_1]) == context[:dummy_1]
+    end
+
+    test "roots", context do
+      assert DummyContext.roots == [context[:dummy_1], context[:dummy_2], context[:dummy_3]]
+    end
+
+    test "Check depth", context do
+      assert context[:dummy_1].depth == 0
+      assert context[:dummy_2].depth == 0
+      assert context[:dummy_3].depth == 0
+      assert context[:dummy_4].depth == 1
+      assert context[:dummy_5].depth == 2
+    end
+
+    test "ancestors", context do
+      dummy_1 = context[:dummy_1]
+      dummy_2 = context[:dummy_2]
+      dummy_3 = context[:dummy_3]
+      dummy_4 = context[:dummy_4]
+      dummy_5 = context[:dummy_5]
+      assert DummyContext.ancestors(dummy_1) == []
+      assert DummyContext.ancestors(dummy_2) == []
+      assert DummyContext.ancestors(dummy_3) == []
+      assert DummyContext.ancestors(dummy_4) == [dummy_2]
+      assert DummyContext.ancestors(dummy_5) == [dummy_2, dummy_4]
+    end
+
+    test "self and ancestors", context do
+      dummy_1 = context[:dummy_1]
+      dummy_2 = context[:dummy_2]
+      dummy_3 = context[:dummy_3]
+      dummy_4 = context[:dummy_4]
+      dummy_5 = context[:dummy_5]
+      assert DummyContext.self_and_ancestors(dummy_1) == [dummy_1]
+      assert DummyContext.self_and_ancestors(dummy_2) == [dummy_2]
+      assert DummyContext.self_and_ancestors(dummy_3) == [dummy_3]
+      assert DummyContext.self_and_ancestors(dummy_4) == [dummy_2, dummy_4]
+
+      # THIS TEST FAILS BECAUSE dummy_5 has preloaded data!
+      # assert DummyContext.self_and_ancestors(context[:dummy_5]) == [context[:dummy_2], context[:dummy_4], context[:dummy_5]]
+
+      # Test that it looks the same (without testing assoc)
+      left = DummyContext.self_and_ancestors(dummy_5) |> sanitize()
+      right = [dummy_2, dummy_4, dummy_5] |> sanitize()
+      assert left == right
+    end
+
+    test "siblings", context do
+      assert DummyContext.siblings(context[:dummy_4]) == []
+      assert DummyContext.siblings(context[:dummy_5]) == []
+
+      p1 = DummyContext.siblings(context[:dummy_1]) |> sanitize()
+      p2 = DummyContext.siblings(context[:dummy_2]) |> sanitize()
+      p3 = DummyContext.siblings(context[:dummy_3]) |> sanitize()
+
+      assert p1 == [context[:dummy_2], context[:dummy_3]] |> sanitize()
+      assert p2 == [context[:dummy_1], context[:dummy_3]] |> sanitize()
+      assert p3 == [context[:dummy_1], context[:dummy_2]] |> sanitize()
+    end
+
+    test "self and siblings", context do
+      dummy_1 = context[:dummy_1]
+      dummy_2 = context[:dummy_2]
+      dummy_3 = context[:dummy_3]
+      dummy_4 = context[:dummy_4]
+      dummy_5 = context[:dummy_5]
+      assert DummyContext.self_and_siblings(dummy_4) == [dummy_4]
+      assert DummyContext.self_and_siblings(dummy_5) |> sanitize() == [dummy_5] |> sanitize()
+
+      p1 = DummyContext.self_and_siblings(dummy_1) |> sanitize()
+      p2 = DummyContext.self_and_siblings(dummy_2) |> sanitize()
+      p3 = DummyContext.self_and_siblings(dummy_3) |> sanitize()
+
+      assert p1 == p2
+      assert p1 == p3
+      assert p2 == p3
+    end
+
+    test "descendants", context do
+      dummy_1 = context[:dummy_1]
+      dummy_2 = context[:dummy_2]
+      dummy_3 = context[:dummy_3]
+      dummy_4 = context[:dummy_4]
+      dummy_5 = context[:dummy_5]
+      assert DummyContext.descendants(dummy_1) == []
+      assert DummyContext.descendants(dummy_3) == []
+      assert DummyContext.descendants(dummy_5) == []
+      assert DummyContext.descendants(dummy_2) |> sanitize() == [dummy_4, dummy_5] |> sanitize()
+      assert DummyContext.descendants(dummy_4) |> sanitize() == [dummy_5] |> sanitize()
+    end
+
+    test "self and descendants", context do
+      dummy_1 = context[:dummy_1]
+      dummy_2 = context[:dummy_2]
+      dummy_3 = context[:dummy_3]
+      dummy_4 = context[:dummy_4]
+      dummy_5 = context[:dummy_5]
+      assert DummyContext.self_and_descendants(dummy_1) == [dummy_1]
+      assert DummyContext.self_and_descendants(dummy_3) == [dummy_3]
+      assert DummyContext.self_and_descendants(dummy_5) |> sanitize() == [dummy_5] |> sanitize()
+      assert DummyContext.self_and_descendants(dummy_2) |> sanitize() == [dummy_2, dummy_4, dummy_5] |> sanitize()
+      assert DummyContext.self_and_descendants(dummy_4) |> sanitize() == [dummy_4, dummy_5] |> sanitize()
+    end
+  end
+
+  # Private
+
+  defp sanitize(collection) do
+    collection |> Enum.map(fn p -> {p.id, p.lft, p.rgt, p.depth} end)
+  end
 end
