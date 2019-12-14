@@ -1,4 +1,8 @@
 defmodule ActsAs.NestedSet do
+  @moduledoc """
+  A behaviour module for implementing Acts as Nested set in Ecto.
+  """
+
   @callback new_changeset(resource :: term, attrs :: term) :: %Ecto.Changeset{}
   @callback child_changeset(resource :: term, attrs :: term, parent_resource :: term) :: %Ecto.Changeset{}
 

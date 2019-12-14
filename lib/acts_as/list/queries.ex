@@ -1,4 +1,7 @@
 defmodule ActsAs.List.Queries do
+  @moduledoc """
+  The queries module
+  """
   defmacro __using__(opts) do
     quote bind_quoted: [opts: opts] do
       import Ecto.Query, warn: false

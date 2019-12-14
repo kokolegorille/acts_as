@@ -80,7 +80,7 @@ defmodule ActsAs.NestedSetTest do
     test "deletes an dummy" do
       {:ok, dummy} = DummyContext.create_dummy(%{})
       DummyContext.delete_dummy(dummy)
-      assert Enum.count(DummyContext.list_dummies) == 0
+      assert DummyContext.list_dummies == []
     end
 
     test "deletes an dummy and recalculate tree" do

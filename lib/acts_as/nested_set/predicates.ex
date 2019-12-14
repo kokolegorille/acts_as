@@ -1,4 +1,7 @@
 defmodule ActsAs.NestedSet.Predicates do
+  @moduledoc """
+  The predicates module
+  """
   defmacro __using__(_opts) do
     quote do
       def root?(%__MODULE__{parent_id: parent_id} = _resource), do: is_nil(parent_id)

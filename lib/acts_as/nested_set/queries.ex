@@ -1,4 +1,7 @@
 defmodule ActsAs.NestedSet.Queries do
+  @moduledoc """
+  The queries module
+  """
   defmacro __using__(_opts) do
     quote do
       import Ecto.Query, warn: false

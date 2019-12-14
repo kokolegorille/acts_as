@@ -1,4 +1,7 @@
 defmodule ActsAs.List.Multies do
+  @moduledoc """
+  The multies module
+  """
   defmacro __using__(_opts) do
     quote do
       def insert(%__MODULE__{} = resource, attrs) do

@@ -1,4 +1,7 @@
 defmodule ActsAs.NestedSet.Multies do
+  @moduledoc """
+  The multies module
+  """
   defmacro __using__(_opts) do
     quote do
       import ActsAs.NestedSet.Multies
