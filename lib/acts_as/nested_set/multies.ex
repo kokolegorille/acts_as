@@ -75,15 +75,15 @@ defmodule ActsAs.NestedSet.Multies do
               ]
             )
 
-            Multi.new
-            |> Multi.update_all(:update_depth, update_depth_query, [])
-            |> Multi.update_all(:update_lft_rgt, update_lft_rgt_query, [])
-            |> Multi.update(:update_parent, updated_resource)
-
             # Multi.new
-            # |> Multi.update(:update_parent, updated_resource)
             # |> Multi.update_all(:update_depth, update_depth_query, [])
             # |> Multi.update_all(:update_lft_rgt, update_lft_rgt_query, [])
+            # |> Multi.update(:update_parent, updated_resource)
+
+            Multi.new
+            |> Multi.update(:update_parent, updated_resource)
+            |> Multi.update_all(:update_depth, update_depth_query, [])
+            |> Multi.update_all(:update_lft_rgt, update_lft_rgt_query, [])
         end
       end
 
@@ -96,12 +96,13 @@ defmodule ActsAs.NestedSet.Multies do
           _ ->
             width = rgt - lft + 1
             depth_diff = b_depth - depth
+            parent = brother.parent
+            # |> IO.inspect(label: "PARENT")
+
+            updated_resource = resource |> change() |> put_assoc(:parent, parent)
 
             # Update depth
             update_depth_query = from(i in __MODULE__, where: i.lft >= ^lft and i.rgt <= ^rgt, update: [inc: [depth: ^depth_diff]])
-
-            # update parent for resource
-            updated_resource = resource |> change() |> put_assoc(:parent, brother.parent)
 
             [{inside_lft, inside_rgt, inside_inc}, {outside_lft, outside_rgt, outside_inc}] = if lft > b_rgt do
               # From right to left
@@ -127,6 +128,41 @@ defmodule ActsAs.NestedSet.Multies do
             |> Multi.update_all(:update_depth, update_depth_query, [])
             |> Multi.update_all(:update_lft_rgt, update_lft_rgt_query, [])
             |> Multi.update(:update_parent, updated_resource)
+
+            # Multi.new
+            # |> Multi.update(:update_parent, updated_resource)
+            # |> Multi.update_all(:update_depth, update_depth_query, [])
+            # |> Multi.update_all(:update_lft_rgt, update_lft_rgt_query, [])
+
+            # if resource.parent == parent do
+            #   Multi.new
+            #   |> Multi.update_all(:update_depth, update_depth_query, [])
+            #   |> Multi.update_all(:update_lft_rgt, update_lft_rgt_query, [])
+            # else
+            #   if parent do
+            #     # update parent for resource
+            #     updated_resource = resource |> change() |> put_assoc(:parent, parent)
+
+            #     Multi.new
+            #     |> Multi.update(:update_parent, updated_resource)
+            #     |> Multi.update_all(:update_depth, update_depth_query, [])
+            #     |> Multi.update_all(:update_lft_rgt, update_lft_rgt_query, [])
+            #   else
+            #     updated_resource = resource
+            #     |> IO.inspect(label: "RESOURCE")
+            #     |> change()
+            #     |> IO.inspect(label: "---->")
+            #     |> put_assoc(:parent, nil)
+            #     |> IO.inspect(label: "<----")
+
+            #     Multi.new
+            #     |> Multi.update_all(:update_depth, update_depth_query, [])
+            #     |> Multi.update_all(:update_lft_rgt, update_lft_rgt_query, [])
+            #     |> Multi.update(:update_parent, updated_resource)
+            #   end
+            # end
+
+
         end
       end
 

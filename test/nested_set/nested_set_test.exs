@@ -14,7 +14,7 @@ defmodule ActsAs.NestedSetTest do
 
     schema "dummies" do
       # self join
-      belongs_to(:parent, __MODULE__, foreign_key: :parent_id, on_replace: :delete)
+      belongs_to(:parent, __MODULE__, foreign_key: :parent_id, on_replace: :nilify)
       has_many(:children, __MODULE__, foreign_key: :parent_id)
 
       # nested set
@@ -174,6 +174,7 @@ defmodule ActsAs.NestedSetTest do
       end
     end
 
+    def move_to_root(%Dummy{depth: 0}), do: {:error, "already at root level"}
     def move_to_root(%Dummy{} = dummy) do
       dummy
       |> move_to_right_of(last_root())
@@ -559,40 +560,40 @@ defmodule ActsAs.NestedSetTest do
   end
 
   describe "Complex Movements" do
-    # test "move to left of (complex)" do
-    #   {:ok, dummy_1} = DummyContext.create_dummy(%{})
-    #   {:ok, dummy_2} = DummyContext.create_dummy(%{}, dummy_1)
-    #   {:ok, dummy_3} = DummyContext.create_dummy(%{})
+    test "move to left of (complex)" do
+      {:ok, dummy_1} = DummyContext.create_dummy(%{})
+      {:ok, dummy_2} = DummyContext.create_dummy(%{}, dummy_1)
+      {:ok, dummy_3} = DummyContext.create_dummy(%{})
 
-    #   # Reload data
-    #   dummy_1 = DummyContext.get_dummy(dummy_1.id)
+      # Reload data
+      dummy_1 = DummyContext.get_dummy(dummy_1.id)
 
-    #   assert dummy_1.lft == 1
-    #   assert dummy_1.rgt == 4
+      assert dummy_1.lft == 1
+      assert dummy_1.rgt == 4
 
-    #   assert dummy_2.lft == 2
-    #   assert dummy_2.rgt == 3
-    #   assert dummy_2.depth == 1
-    #   assert dummy_2.parent_id == dummy_1.id
+      assert dummy_2.lft == 2
+      assert dummy_2.rgt == 3
+      assert dummy_2.depth == 1
+      assert dummy_2.parent_id == dummy_1.id
 
-    #   DummyContext.move_to_left_of(dummy_2, dummy_3)
+      DummyContext.move_to_left_of(dummy_2, dummy_3)
 
-    #   # Reload data
-    #   dummy_1 = DummyContext.get_dummy(dummy_1.id)
-    #   dummy_2 = DummyContext.get_dummy(dummy_2.id)
-    #   dummy_3 = DummyContext.get_dummy(dummy_3.id)
+      # Reload data
+      dummy_1 = DummyContext.get_dummy(dummy_1.id)
+      dummy_2 = DummyContext.get_dummy(dummy_2.id)
+      dummy_3 = DummyContext.get_dummy(dummy_3.id)
 
-    #   assert dummy_1.lft == 1
-    #   assert dummy_1.rgt == 2
+      assert dummy_1.lft == 1
+      assert dummy_1.rgt == 2
 
-    #   assert dummy_2.lft == 3
-    #   assert dummy_2.rgt == 4
-    #   assert dummy_2.depth == 0
-    #   assert is_nil(dummy_2.parent_id)
+      assert dummy_2.lft == 3
+      assert dummy_2.rgt == 4
+      assert dummy_2.depth == 0
+      assert is_nil(dummy_2.parent_id)
 
-    #   assert dummy_3.lft == 5
-    #   assert dummy_3.rgt == 6
-    # end
+      assert dummy_3.lft == 5
+      assert dummy_3.rgt == 6
+    end
   end
 
   describe "Predicates" do
@@ -707,6 +708,7 @@ defmodule ActsAs.NestedSetTest do
       assert DummyContext.roots == [context[:dummy_1], context[:dummy_2], context[:dummy_3]]
     end
 
+    # Previously, was check level.
     test "Check depth", context do
       assert context[:dummy_1].depth == 0
       assert context[:dummy_2].depth == 0
