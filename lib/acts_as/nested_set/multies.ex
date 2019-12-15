@@ -8,9 +8,7 @@ defmodule ActsAs.NestedSet.Multies do
       import Ecto.Query, warn: false
       alias Ecto.Multi
 
-      def insert(%__MODULE__{} = resource, attrs) do
-        new_changeset(resource, attrs)
-      end
+      def insert(%__MODULE__{} = resource, attrs), do: new_changeset(resource, attrs)
       def insert(%__MODULE__{} = resource, attrs, parent) when is_nil(parent),
         do: insert(resource, attrs)
       def insert(%__MODULE__{} = resource, attrs, %__MODULE__{rgt: rgt} = parent) do
@@ -48,27 +46,18 @@ defmodule ActsAs.NestedSet.Multies do
           _ ->
             width = rgt - lft + 1
             depth_diff = p_depth - depth + 1
-
-            # Update depth
             update_depth_query = from(i in __MODULE__, where: i.lft >= ^lft and i.rgt <= ^rgt, update: [inc: [depth: ^depth_diff]])
-
-            # update parent for resource
             updated_resource = resource |> change() |> put_assoc(:parent, parent)
-
             [
               {inside_lft, inside_rgt, inside_inc},
               {outside_lft, outside_rgt, outside_inc}
-            ] = if lft > p_rgt do
-              # From right to left
+            ] = if lft > p_rgt do # From right to left
               diff = p_rgt - lft
               [{lft, rgt, diff}, {p_rgt, lft - 1, width}]
-            else
-              # From left to right
+            else # From left to right
               diff = p_lft - rgt
               [{lft, rgt, diff}, {lft + 1, p_lft, -width}]
             end
-
-            # Update lft and rgt from fragments
             update_lft_rgt_query = from(i in __MODULE__,
               update: [
                 set: [
@@ -94,25 +83,15 @@ defmodule ActsAs.NestedSet.Multies do
           _ ->
             width = rgt - lft + 1
             depth_diff = b_depth - depth
-            parent = brother.parent
-            # |> IO.inspect(label: "PARENT")
-
-            updated_resource = resource |> change() |> put_assoc(:parent, parent)
-
-            # Update depth
+            updated_resource = resource |> change() |> put_assoc(:parent, brother.parent)
             update_depth_query = from(i in __MODULE__, where: i.lft >= ^lft and i.rgt <= ^rgt, update: [inc: [depth: ^depth_diff]])
-
-            [{inside_lft, inside_rgt, inside_inc}, {outside_lft, outside_rgt, outside_inc}] = if lft > b_rgt do
-              # From right to left
+            [{inside_lft, inside_rgt, inside_inc}, {outside_lft, outside_rgt, outside_inc}] = if lft > b_rgt do # From right to left
               diff = b_rgt + 1 - lft
               [{lft, rgt, diff}, {b_rgt + 1, lft - 1, width}]
-            else
-              # From left to right
+            else # From left to right
               diff = b_rgt - rgt
               [{lft, rgt, diff}, {rgt + 1, b_rgt, -width}]
             end
-
-            # Update lft and rgt from fragments
             update_lft_rgt_query = from(i in __MODULE__,
               update: [
                 set: [
@@ -138,24 +117,15 @@ defmodule ActsAs.NestedSet.Multies do
           _ ->
             width = rgt - lft + 1
             depth_diff = b_depth - depth
-
-            # Update depth
             update_depth_query = from(i in __MODULE__, where: i.lft >= ^lft and i.rgt <= ^rgt, update: [inc: [depth: ^depth_diff]])
-
-            # update parent for resource
             updated_resource = resource |> change() |> put_assoc(:parent, brother.parent)
-
-            [{inside_lft, inside_rgt, inside_inc}, {outside_lft, outside_rgt, outside_inc}] = if lft > b_lft do
-              # From right to left
+            [{inside_lft, inside_rgt, inside_inc}, {outside_lft, outside_rgt, outside_inc}] = if lft > b_lft do # From right to left
               diff = b_lft - lft
               [{lft, rgt, diff}, {b_lft, lft - 1, width}]
-            else
-              # From left to right
+            else # From left to right
               diff = b_lft - 1 - rgt
               [{lft, rgt, diff}, {rgt + 1, b_lft - 1, -width}]
             end
-
-            # Update lft and rgt from fragments
             update_lft_rgt_query = from(i in __MODULE__,
               update: [
                 set: [
