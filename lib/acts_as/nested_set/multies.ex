@@ -13,7 +13,7 @@ defmodule ActsAs.NestedSet.Multies do
         do: insert(resource, attrs)
       def insert(%__MODULE__{} = resource, attrs, %__MODULE__{rgt: rgt} = parent) do
         new_resource = resource
-        |> child_changeset(parent, attrs)
+        |> new_changeset(parent, attrs)
         |> put_assoc(:parent, parent)
 
         update_rgt_query = from(i in __MODULE__, where: i.rgt >= ^rgt, update: [inc: [rgt: 2]])
@@ -142,7 +142,7 @@ defmodule ActsAs.NestedSet.Multies do
         end
       end
     end
-  end
+  end # to avoid credo warning, quote blocks are limited to 150 lines!
 
   ########################################
   #

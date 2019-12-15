@@ -68,7 +68,7 @@ defmodule Dummy do
   end
 
   @impl ActsAs.NestedSet
-  def child_changeset(%__MODULE__{} = dummy, %__MODULE__{} = parent, attrs) do
+  def new_changeset(%__MODULE__{} = dummy, %__MODULE__{} = parent, attrs) do
     dummy
     |> changeset(attrs)
     |> generate_lft_rgt_depth_from(parent)
