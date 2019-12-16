@@ -85,7 +85,7 @@ defmodule ActsAs.NestedSet.Queries do
 
       def leaves, do: from(r in __MODULE__, where: fragment("? + 1", r.lft) == r.rgt, order_by: :lft)
 
-      def max_rgt, do: from(r in __MODULE__, select: max(r.rgt))
+      def max_rgt_query, do: from(r in __MODULE__, select: max(r.rgt))
     end
   end
 end

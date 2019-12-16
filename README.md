@@ -19,3 +19,7 @@ Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_do
 and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
 be found at [https://hexdocs.pm/acts_as](https://hexdocs.pm/acts_as).
 
+## Ex Doc
+
+$ mix escript.install hex ex_doc
+$ ~/.asdf/installs/elixir/1.9.1-otp-22/.mix/escripts/ex_doc "ActsAs" "0.0.1" _build/dev/lib/acts_as/ebin/

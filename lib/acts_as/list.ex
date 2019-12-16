@@ -9,8 +9,9 @@ defmodule ActsAs.List do
     quote bind_quoted: [opts: opts] do
       @behaviour ActsAs.List
 
+      use ActsAs.List.Predicates
       use ActsAs.List.Queries, opts
-      use ActsAs.List.Multies
+      use ActsAs.List.Multies, opts
     end
   end
 end
