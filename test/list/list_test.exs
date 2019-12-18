@@ -47,6 +47,7 @@ defmodule ActsAs.ListTest do
       assert dummy.position == 1
       assert dummy2.position == 2
       assert dummy3.position == 3
+      assert DummyList.get_max_position(parent.id) == 3
 
       DummyListContext.delete_dummy(dummy2)
       dummy3 = DummyListContext.get_dummy(dummy3.id)

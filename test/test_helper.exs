@@ -71,30 +71,31 @@ defmodule DummyNS do
   def new_changeset(%__MODULE__{} = dummy, %__MODULE__{} = parent, attrs) do
     dummy
     |> changeset(attrs)
-    |> generate_lft_rgt_depth_from(parent)
+    |> generate_lft_rgt_depth(parent)
   end
 
   defp generate_lft_rgt_depth(%Ecto.Changeset{valid?: true} = changeset) do
     lft = get_max_rgt() + 1
     rgt = lft + 1
-
-    changeset
-    |> put_change(:depth, 0)
-    |> put_change(:lft, lft)
-    |> put_change(:rgt, rgt)
+    depth = 0
+    do_generate_lft_rgt_depth(changeset, lft, rgt, depth)
   end
   defp generate_lft_rgt_depth(%Ecto.Changeset{} = changeset), do: changeset
 
-  defp generate_lft_rgt_depth_from(%Ecto.Changeset{valid?: true} = changeset, parent) do
+  defp generate_lft_rgt_depth(%Ecto.Changeset{valid?: true} = changeset, parent) do
     lft = parent.rgt
     rgt = lft + 1
+    depth = parent.depth + 1
+    do_generate_lft_rgt_depth(changeset, lft, rgt, depth)
+  end
+  defp generate_lft_rgt_depth(%Ecto.Changeset{} = changeset, _parent), do: changeset
 
+  defp do_generate_lft_rgt_depth(changeset, lft, rgt, depth) do
     changeset
-    |> put_change(:depth, parent.depth + 1)
+    |> put_change(:depth, depth)
     |> put_change(:lft, lft)
     |> put_change(:rgt, rgt)
   end
-  defp generate_lft_rgt_depth_from(%Ecto.Changeset{} = changeset, _parent), do: changeset
 
   # In the real implementation, this is delegated to context
   # which knows about repo!
