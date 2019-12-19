@@ -90,7 +90,9 @@ defmodule DummyNS do
   end
   defp generate_lft_rgt_depth(%Ecto.Changeset{} = changeset, _parent), do: changeset
 
-  defp do_generate_lft_rgt_depth(changeset, lft, rgt, depth) do
+  defp do_generate_lft_rgt_depth(
+    %Ecto.Changeset{valid?: true} = changeset, lft, rgt, depth
+  ) do
     changeset
     |> put_change(:depth, depth)
     |> put_change(:lft, lft)
