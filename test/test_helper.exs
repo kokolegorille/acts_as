@@ -1,6 +1,7 @@
 ExUnit.start()
 
 alias Ecto.Integration.TestRepo
+alias Ecto.Multi
 
 Application.put_env(
   :ecto,
@@ -312,5 +313,14 @@ defmodule DummyListContext do
     |> TestRepo.transaction()
 
     {:ok, deleted}
+  end
+
+  def move_from_to(%DummyList{} = from, %DummyList{} = to, scope_value) do
+    case DummyList.move_from_to(from, to, scope_value) do
+      %Multi{} = multi ->
+        TestRepo.transaction(multi)
+      other ->
+        {:error, "cannot apply multi on #{inspect other}"}
+    end
   end
 end
