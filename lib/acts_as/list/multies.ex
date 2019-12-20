@@ -97,19 +97,14 @@ defmodule ActsAs.List.Multies do
           )
         end
 
-        # update_from_query =
-        #   from(i in __MODULE__,
-        #     where: i.id == ^from_id and field(i, ^scope) == ^scope_value,
-        #     update: [set: [position: ^to_position]]
-        #   )
-
+        # Update from as a single resource
+        # This allows to use Multi.update, instead of update_all
         update_resource = from
         |> change()
         |> put_change(:position, to_position)
 
         Multi.new
         |> Multi.update_all(:update_rest, update_rest_query, [])
-        # |> Multi.update_all(:update_from, update_from_query, [])
         |> Multi.update(:update_from, update_resource, [])
       end
 
